@@ -1,4 +1,4 @@
-module github.com/mattn/chatgpt
+module github.com/bluegitter/chatgpt
 
 go 1.19
 
