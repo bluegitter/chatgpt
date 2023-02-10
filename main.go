@@ -69,7 +69,8 @@ func main() {
 		log.Fatal("Missing CHATGPT_API KEY")
 	}
 
-	client := gpt3.NewClient(apiKey)
+	options := gpt3.WithTimeout(time.Duration(120 * time.Second))
+	client := gpt3.NewClient(apiKey, options)
 
 	if j {
 		log.Fatal(doJson(client, os.Stdin, os.Stdout))
