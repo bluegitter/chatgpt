@@ -11,7 +11,7 @@ $ ./chatgpt
 ## Installation
 
 ```
-go install github.com/mattn/chatgpt@latest
+go install github.com/bluegitter/chatgpt@latest
 ```
 
 ## License
