@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"flag"
@@ -9,8 +8,10 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/PullRequestInc/go-gpt3"
+	"github.com/chzyer/readline"
 )
 
 type payload struct {
@@ -39,7 +40,7 @@ func doJson(client gpt3.Client, r io.Reader, w io.Writer) error {
 				Prompt: []string{
 					p.Text,
 				},
-				MaxTokens:   gpt3.IntPtr(3000),
+				MaxTokens:   gpt3.IntPtr(4000),
 				Temperature: gpt3.Float32Ptr(0),
 			}, func(resp *gpt3.CompletionResponse) {
 				enc.Encode(response{EOF: false, Text: resp.Choices[0].Text})
@@ -68,21 +69,33 @@ func main() {
 	if apiKey == "" {
 		log.Fatal("Missing CHATGPT_API KEY")
 	}
-
-	options := gpt3.WithTimeout(time.Duration(120 * time.Second))
+	options := gpt3.WithTimeout(time.Duration(600 * time.Second))
 	client := gpt3.NewClient(apiKey, options)
 
 	if j {
 		log.Fatal(doJson(client, os.Stdin, os.Stdout))
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
+	rl, err := readline.New("> ")
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+    defer rl.Close()
+
 	for {
-		fmt.Print("> ")
-		if !scanner.Scan() {
-			break
-		}
-		text := scanner.Text()
+	    text, err1 := rl.Readline()
+        if err1 != nil {
+            fmt.Println("Error:", err1)
+            break
+        }
+
+        // 如果输入为空或长度为零，则不做任何处理
+        if len(text) == 0 {
+            continue
+        }
+
+		// text := scanner.Text()
 		err := client.CompletionStreamWithEngine(
 			context.Background(),
 			gpt3.TextDavinci003Engine,
@@ -90,8 +103,8 @@ func main() {
 				Prompt: []string{
 					text,
 				},
-				MaxTokens:   gpt3.IntPtr(3000),
-				Temperature: gpt3.Float32Ptr(0),
+				MaxTokens:   gpt3.IntPtr(4000),
+				Temperature: gpt3.Float32Ptr(0.7),
 			}, func(resp *gpt3.CompletionResponse) {
 				fmt.Print(resp.Choices[0].Text)
 			})
